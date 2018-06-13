@@ -114,7 +114,7 @@ typedef struct MyData MyData;
         
         // AudioFileStreamParseBytes 解析数据，会调用之前设置好的AudioFileStream_PropertyListenerProc 和 AudioFileStream_PacketsProc 回调函数；
         err = AudioFileStreamParseBytes(myData->audioFileStream, (UInt32)bytesRecvd, buf, 0);
-        if (err) { PRINTERROR("AudioFileStreamParseBytes"); break; }
+        if (err) { PRINTERROR("AudioFileStreamParseBytes"); return 0; }
     }
     
     // enqueue last buffer
