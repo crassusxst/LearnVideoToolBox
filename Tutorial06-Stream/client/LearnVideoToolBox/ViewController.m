@@ -15,7 +15,7 @@
 #define PRINTERROR(LABEL)	printf("%s err %4.4s %d\n", LABEL, (char *)&err, err)
 
 const int port = 51515;			// socket端口号
-const unsigned int kNumAQBufs = 3;			// audio queue buffers 数量
+const unsigned int kNumAQBufs = 4;			// audio queue buffers 数量
 const size_t kAQBufSize = 128 * 1024;		// buffer 的大小 单位是字节
 const size_t kAQMaxPacketDescs = 512;		// ASPD的最大数量
 
@@ -280,6 +280,10 @@ OSStatus MyEnqueueBuffer(MyData* myData)
 
     // enqueue buffer
     AudioQueueBufferRef fillBuf = myData->audioQueueBuffer[myData->fillBufferIndex];
+    if (fillBuf == nil) {
+        err = kAudioServicesUnsupportedPropertyError;
+        return err;
+    }
     fillBuf->mAudioDataByteSize = (UInt32)myData->bytesFilled;
     // 向AudioQueue传入buffer
     err = AudioQueueEnqueueBuffer(myData->audioQueue, fillBuf, (UInt32)myData->packetsFilled, myData->packetDescs);

@@ -43,7 +43,7 @@ const int port = 51515;
  */
 - (int)startServer {
     // 打开文件
-    FILE* file = fopen([[[NSBundle mainBundle] pathForResource:@"abc" ofType:@"m4a"] UTF8String], "r");
+    FILE* file = fopen([[[NSBundle mainBundle] pathForResource:@"abc" ofType:@"mp3"] UTF8String], "r");
     if (file == NULL) {
         printf("error file path\n");
         return 1;
