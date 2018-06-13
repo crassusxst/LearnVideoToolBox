@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A4AB8D8920D0D6BE00239079 /* test.mov in Resources */ = {isa = PBXBuildFile; fileRef = A4AB8D8320D0D6BE00239079 /* test.mov */; };
+		A4AB8D8A20D0D6BE00239079 /* test.pcm in Resources */ = {isa = PBXBuildFile; fileRef = A4AB8D8420D0D6BE00239079 /* test.pcm */; };
+		A4AB8D8B20D0D6BE00239079 /* abc.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A4AB8D8520D0D6BE00239079 /* abc.mp4 */; };
+		A4AB8D8C20D0D6BE00239079 /* abc.aac in Resources */ = {isa = PBXBuildFile; fileRef = A4AB8D8620D0D6BE00239079 /* abc.aac */; };
+		A4AB8D8D20D0D6BE00239079 /* abc.pcm in Resources */ = {isa = PBXBuildFile; fileRef = A4AB8D8720D0D6BE00239079 /* abc.pcm */; };
+		A4AB8D8E20D0D6BE00239079 /* abc.m4a in Resources */ = {isa = PBXBuildFile; fileRef = A4AB8D8820D0D6BE00239079 /* abc.m4a */; };
 		FD7837472061234700846F33 /* abc.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = FD7837462061234700846F33 /* abc.mp3 */; };
 		FDDA85421E8FCCFA009E7656 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FDDA85411E8FCCFA009E7656 /* AppDelegate.m */; };
 		FDDA85451E8FCCFA009E7656 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FDDA85441E8FCCFA009E7656 /* main.m */; };
@@ -16,6 +22,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A4AB8D8320D0D6BE00239079 /* test.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; name = test.mov; path = ../../../../CommonResource/test.mov; sourceTree = "<group>"; };
+		A4AB8D8420D0D6BE00239079 /* test.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; name = test.pcm; path = ../../../../CommonResource/test.pcm; sourceTree = "<group>"; };
+		A4AB8D8520D0D6BE00239079 /* abc.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; name = abc.mp4; path = ../../../../CommonResource/abc.mp4; sourceTree = "<group>"; };
+		A4AB8D8620D0D6BE00239079 /* abc.aac */ = {isa = PBXFileReference; lastKnownFileType = file; name = abc.aac; path = ../../../../CommonResource/abc.aac; sourceTree = "<group>"; };
+		A4AB8D8720D0D6BE00239079 /* abc.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; name = abc.pcm; path = ../../../../CommonResource/abc.pcm; sourceTree = "<group>"; };
+		A4AB8D8820D0D6BE00239079 /* abc.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; name = abc.m4a; path = ../../../../CommonResource/abc.m4a; sourceTree = "<group>"; };
 		FD7837462061234700846F33 /* abc.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = abc.mp3; path = ../../../../CommonResource/abc.mp3; sourceTree = "<group>"; };
 		FDDA853D1E8FCCFA009E7656 /* AudioStreamServer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioStreamServer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDDA85401E8FCCFA009E7656 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -59,6 +71,12 @@
 			isa = PBXGroup;
 			children = (
 				FD7837462061234700846F33 /* abc.mp3 */,
+				A4AB8D8620D0D6BE00239079 /* abc.aac */,
+				A4AB8D8820D0D6BE00239079 /* abc.m4a */,
+				A4AB8D8520D0D6BE00239079 /* abc.mp4 */,
+				A4AB8D8720D0D6BE00239079 /* abc.pcm */,
+				A4AB8D8320D0D6BE00239079 /* test.mov */,
+				A4AB8D8420D0D6BE00239079 /* test.pcm */,
 				FDDA85401E8FCCFA009E7656 /* AppDelegate.h */,
 				FDDA85411E8FCCFA009E7656 /* AppDelegate.m */,
 				FDDA85461E8FCCFA009E7656 /* ViewController.h */,
@@ -138,9 +156,15 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4AB8D8B20D0D6BE00239079 /* abc.mp4 in Resources */,
+				A4AB8D8920D0D6BE00239079 /* test.mov in Resources */,
+				A4AB8D8C20D0D6BE00239079 /* abc.aac in Resources */,
+				A4AB8D8D20D0D6BE00239079 /* abc.pcm in Resources */,
 				FD7837472061234700846F33 /* abc.mp3 in Resources */,
 				FDDA854A1E8FCCFA009E7656 /* Assets.xcassets in Resources */,
+				A4AB8D8E20D0D6BE00239079 /* abc.m4a in Resources */,
 				FDDA854D1E8FCCFA009E7656 /* Main.storyboard in Resources */,
+				A4AB8D8A20D0D6BE00239079 /* test.pcm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

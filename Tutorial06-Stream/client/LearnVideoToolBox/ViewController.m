@@ -96,12 +96,13 @@ typedef struct MyData MyData;
     printf("connected\n");
     
     // allocate a buffer for reading data from a socket
-    const size_t kRecvBufSize = 40000;
+    const size_t kRecvBufSize = 40;
     char* buf = (char*)malloc(kRecvBufSize * sizeof(char));
     
-    // create an audio file stream parser
+    // AudioFileStream可以用来读取音频流信息和分离音频帧，与之类似的API簇还有AudioFile和ExtAudioFile。
+    // 打开一个音频流转换器，需要设置AudioFileStream_PropertyListenerProc 和 AudioFileStream_PacketsProc 回调函数；
     OSStatus err = AudioFileStreamOpen(myData, MyPropertyListenerProc, MyPacketsProc,
-                                       kAudioFileAAC_ADTSType, &myData->audioFileStream);
+                                       0, &myData->audioFileStream);
     if (err) { PRINTERROR("AudioFileStreamOpen"); free(buf); return 1; }
     
     while (!myData->failed) {
@@ -111,7 +112,7 @@ typedef struct MyData MyData;
         printf("bytesRecvd %ld\n", bytesRecvd);
         if (bytesRecvd <= 0) break; // eof or failure
         
-        // parse the data. this will call MyPropertyListenerProc and MyPacketsProc
+        // AudioFileStreamParseBytes 解析数据，会调用之前设置好的AudioFileStream_PropertyListenerProc 和 AudioFileStream_PacketsProc 回调函数；
         err = AudioFileStreamParseBytes(myData->audioFileStream, (UInt32)bytesRecvd, buf, 0);
         if (err) { PRINTERROR("AudioFileStreamParseBytes"); break; }
     }
@@ -120,10 +121,13 @@ typedef struct MyData MyData;
     MyEnqueueBuffer(myData);
     
     printf("flushing\n");
+    // 播放结束
+    // 传入最后的音频数据后需要调用，否则buffer里面的数据可能会影响下次播放
     err = AudioQueueFlush(myData->audioQueue);
     if (err) { PRINTERROR("AudioQueueFlush"); free(buf); return 1; }
     
     printf("stopping\n");
+    // 如果需要停止播放，可以调用这个函数，第二个参数表示同步/异步
     err = AudioQueueStop(myData->audioQueue, false);
     if (err) { PRINTERROR("AudioQueueStop"); free(buf); return 1; }
     
@@ -139,18 +143,18 @@ typedef struct MyData MyData;
     
     // cleanup
     free(buf);
+    // 关闭音频流
     err = AudioFileStreamClose(myData->audioFileStream);
+    // 播放完毕，销毁队列
     err = AudioQueueDispose(myData->audioQueue, false);
     close(connection_socket);
     free(myData);
-    
-    
-    
+
     return 0;
 }
 
 
-
+//音频属性回调函数
 void MyPropertyListenerProc(	void *							inClientData,
                             AudioFileStreamID				inAudioFileStream,
                             AudioFileStreamPropertyID		inPropertyID,
@@ -169,14 +173,16 @@ void MyPropertyListenerProc(	void *							inClientData,
             // get the stream format.
             AudioStreamBasicDescription asbd;
             UInt32 asbdSize = sizeof(asbd);
+            // 获取特定的属性
             err = AudioFileStreamGetProperty(inAudioFileStream, kAudioFileStreamProperty_DataFormat, &asbdSize, &asbd);
             if (err) { PRINTERROR("get kAudioFileStreamProperty_DataFormat"); myData->failed = true; break; }
             
-            // create the audio queue
+            // 配置AudioQueue
+            // 添加AudioQueue的回调函数和添加参数，MyAudioQueueOutputCallback是播完结束的回调
             err = AudioQueueNewOutput(&asbd, MyAudioQueueOutputCallback, myData, NULL, NULL, 0, &myData->audioQueue);
             if (err) { PRINTERROR("AudioQueueNewOutput"); myData->failed = true; break; }
             
-            // allocate audio queue buffers
+            // AudioBuffer分配buffer
             for (unsigned int i = 0; i < kNumAQBufs; ++i) {
                 err = AudioQueueAllocateBuffer(myData->audioQueue, kAQBufSize, &myData->audioQueueBuffer[i]);
                 if (err) { PRINTERROR("AudioQueueAllocateBuffer"); myData->failed = true; break; }
@@ -200,6 +206,7 @@ void MyPropertyListenerProc(	void *							inClientData,
             if (err) { PRINTERROR("set kAudioQueueProperty_MagicCookie"); break; }
             
             // listen for kAudioQueueProperty_IsRunning
+            // 添加AudioQueue的属性监听
             err = AudioQueueAddPropertyListener(myData->audioQueue, kAudioQueueProperty_IsRunning, MyAudioQueueIsRunningCallback, myData);
             if (err) { PRINTERROR("AudioQueueAddPropertyListener"); myData->failed = true; break; }
             
@@ -208,7 +215,7 @@ void MyPropertyListenerProc(	void *							inClientData,
     }
 }
 
-
+// 数据回调函数
 void MyPacketsProc(void *							inClientData,
                    UInt32							inNumberBytes,
                    UInt32							inNumberPackets,
@@ -251,10 +258,12 @@ void MyPacketsProc(void *							inClientData,
     }
 }
 
+// 开始播放
 OSStatus StartQueueIfNeeded(MyData* myData)
 {
     OSStatus err = noErr;
     if (!myData->started) {		// start the queue if it has not been started already
+        // 开始AudioQueue播放
         err = AudioQueueStart(myData->audioQueue, NULL);
         if (err) { PRINTERROR("AudioQueueStart"); myData->failed = true; return err; }
         myData->started = true;
@@ -263,6 +272,7 @@ OSStatus StartQueueIfNeeded(MyData* myData)
     return err;
 }
 
+// 把buffer里面的数据传入AudioQueue
 OSStatus MyEnqueueBuffer(MyData* myData)
 {
     OSStatus err = noErr;
@@ -271,6 +281,7 @@ OSStatus MyEnqueueBuffer(MyData* myData)
     // enqueue buffer
     AudioQueueBufferRef fillBuf = myData->audioQueueBuffer[myData->fillBufferIndex];
     fillBuf->mAudioDataByteSize = (UInt32)myData->bytesFilled;
+    // 向AudioQueue传入buffer
     err = AudioQueueEnqueueBuffer(myData->audioQueue, fillBuf, (UInt32)myData->packetsFilled, myData->packetDescs);
     if (err) { PRINTERROR("AudioQueueEnqueueBuffer"); myData->failed = true; return err; }
     
@@ -279,7 +290,7 @@ OSStatus MyEnqueueBuffer(MyData* myData)
     return err;
 }
 
-
+// 当前所有buffer已经占用满，等待AudioQueue播放完释放buffer
 void WaitForFreeBuffer(MyData* myData)
 {
     // go to next buffer
@@ -289,13 +300,28 @@ void WaitForFreeBuffer(MyData* myData)
     
     // wait until next buffer is not in use
     printf("WaitForFreeBuffer->lock\n");
+    //  调用pthread_cond_wait前，要先调用pthread_mutex_lock(mutex)加锁，pthread_cond_wait会在调用结束解锁mutex；
     pthread_mutex_lock(&myData->mutex);
     while (myData->inuse[myData->fillBufferIndex]) {
         printf("... WAITING ...\n");
+        // 条件锁(pthread_cond_wait), 条件不成立则阻塞，直到条件成立
         pthread_cond_wait(&myData->cond, &myData->mutex);
     }
+    // pthread_cond_wait条件满足后(pthread_cond_signal被调用)，会对mutex加锁，当我们执行完程序时需要对mutex解锁；
     pthread_mutex_unlock(&myData->mutex);
     printf("WaitForFreeBuffer->unlock\n");
+
+    /*
+     申请条件锁
+     pthread_mutex_lock(&mutex);
+     pthread_cond_wait(&cond, &mutex);
+     pthread_mutex_unlock(&mutex);
+
+     释放条件锁
+     pthread_mutex_lock(&mutex);
+     pthread_cond_signal(&cond);
+     pthread_mutex_unlock(&mutex);
+     */
 }
 
 int MyFindQueueBuffer(MyData* myData, AudioQueueBufferRef inBuffer)
@@ -307,7 +333,7 @@ int MyFindQueueBuffer(MyData* myData, AudioQueueBufferRef inBuffer)
     return -1;
 }
 
-
+// AudioQueue释放buffer的回调函数
 void MyAudioQueueOutputCallback(	void*					inClientData,
                                 AudioQueueRef			inAQ,
                                 AudioQueueBufferRef		inBuffer)
@@ -330,6 +356,7 @@ void MyAudioQueueOutputCallback(	void*					inClientData,
     
 }
 
+// AudioQueue是否在播放的回调函数
 void MyAudioQueueIsRunningCallback(		void*					inClientData,
                                    AudioQueueRef			inAQ,
                                    AudioQueuePropertyID	inID)
@@ -349,11 +376,12 @@ void MyAudioQueueIsRunningCallback(		void*					inClientData,
     }
 }
 
+// 建立socket链接
 int MyConnectSocket() {
     
     int connection_socket;
     // 这里的host，要改成对应的地址！！！
-    struct hostent *host = gethostbyname("192.168.1.102");
+    struct hostent *host = gethostbyname("192.168.2.101");
     if (!host) { printf("can't get host\n"); return -1; }
     
     connection_socket = socket(AF_INET, SOCK_STREAM, 0);
