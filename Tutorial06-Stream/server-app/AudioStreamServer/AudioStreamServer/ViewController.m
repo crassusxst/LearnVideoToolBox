@@ -12,6 +12,9 @@
 
 @interface ViewController()
 
+/** sockt 链接 */
+@property (nonatomic, assign) int connection_socket;
+
 @end
 
 @implementation ViewController
@@ -24,8 +27,15 @@ const int port = 51515;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self startServer];
     });
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(closeServer) name:@"closeServer" object:nil];
 }
 
+- (void)viewWillDisappear
+{
+    [super viewWillDisappear];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 
 /**
@@ -33,7 +43,7 @@ const int port = 51515;
  */
 - (int)startServer {
     // 打开文件
-    FILE* file = fopen([[[NSBundle mainBundle] pathForResource:@"abc" ofType:@"mp3"] UTF8String], "r");
+    FILE* file = fopen([[[NSBundle mainBundle] pathForResource:@"abc" ofType:@"m4a"] UTF8String], "r");
     if (file == NULL) {
         printf("error file path\n");
         return 1;
@@ -65,8 +75,8 @@ const int port = 51515;
         struct sockaddr_in client_sockaddr;
         socklen_t client_sockaddr_size = sizeof(client_sockaddr);
         // 接收tcp连接，注意！这里并不是三次握手。
-        int connection_socket = accept(listener_socket, (struct sockaddr*)&client_sockaddr, &client_sockaddr_size);
-        if (connection_socket < 0) {
+       self.connection_socket = accept(listener_socket, (struct sockaddr*)&client_sockaddr, &client_sockaddr_size);
+        if (self.connection_socket < 0) {
             printf("accept failed\n");
             continue;
         }
@@ -96,7 +106,7 @@ const int port = 51515;
             }
             
             // 发送音频流
-            ssize_t bytesSent = send(connection_socket, buf, bytesRead, 0);
+            ssize_t bytesSent = send(self.connection_socket, buf, bytesRead, 0);
             totalSent += bytesSent;
             printf("  bytesSent %ld  totalSent %qd\n", bytesSent, totalSent);
             if (bytesSent < 0) {
@@ -106,10 +116,16 @@ const int port = 51515;
         }
 
         // 关闭socket
-        close(connection_socket);
+        close(self.connection_socket);
     }
 }
 
+
+- (void)closeServer
+{
+    NSLog(@"断开服务");
+    close(self.connection_socket);
+}
 
 - (void)setRepresentedObject:(id)representedObject {
     [super setRepresentedObject:representedObject];

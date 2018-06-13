@@ -277,7 +277,7 @@ OSStatus MyEnqueueBuffer(MyData* myData)
 {
     OSStatus err = noErr;
     myData->inuse[myData->fillBufferIndex] = true;		// set in use flag
-    
+
     // enqueue buffer
     AudioQueueBufferRef fillBuf = myData->audioQueueBuffer[myData->fillBufferIndex];
     fillBuf->mAudioDataByteSize = (UInt32)myData->bytesFilled;
