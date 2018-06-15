@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A41EAA3820D2510C00E0C403 /* AudioFileObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A41EAA3720D2510C00E0C403 /* AudioFileObject.m */; };
 		A4AB8D9420D1341D00239079 /* AudioFilePlayObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A4AB8D9320D1341D00239079 /* AudioFilePlayObject.m */; };
 		FD315B841D77F89E000CC96D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FD315B831D77F89E000CC96D /* main.m */; };
 		FD315B871D77F89E000CC96D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FD315B861D77F89E000CC96D /* AppDelegate.m */; };
@@ -29,6 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A41EAA3620D2510C00E0C403 /* AudioFileObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioFileObject.h; sourceTree = "<group>"; };
+		A41EAA3720D2510C00E0C403 /* AudioFileObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioFileObject.m; sourceTree = "<group>"; };
 		A4AB8D9220D1341D00239079 /* AudioFilePlayObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioFilePlayObject.h; sourceTree = "<group>"; };
 		A4AB8D9320D1341D00239079 /* AudioFilePlayObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioFilePlayObject.m; sourceTree = "<group>"; };
 		FD315B7F1D77F89E000CC96D /* LearnVideoToolBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnVideoToolBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -94,6 +97,8 @@
 				FD315B891D77F89E000CC96D /* ViewController.m */,
 				A4AB8D9220D1341D00239079 /* AudioFilePlayObject.h */,
 				A4AB8D9320D1341D00239079 /* AudioFilePlayObject.m */,
+				A41EAA3620D2510C00E0C403 /* AudioFileObject.h */,
+				A41EAA3720D2510C00E0C403 /* AudioFileObject.m */,
 				FD315B8B1D77F89E000CC96D /* Main.storyboard */,
 				FD315B8E1D77F89E000CC96D /* Assets.xcassets */,
 				FD315B901D77F89E000CC96D /* LaunchScreen.storyboard */,
@@ -224,6 +229,7 @@
 				FD315B8A1D77F89E000CC96D /* ViewController.m in Sources */,
 				FD315B871D77F89E000CC96D /* AppDelegate.m in Sources */,
 				FD315B841D77F89E000CC96D /* main.m in Sources */,
+				A41EAA3820D2510C00E0C403 /* AudioFileObject.m in Sources */,
 				A4AB8D9420D1341D00239079 /* AudioFilePlayObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

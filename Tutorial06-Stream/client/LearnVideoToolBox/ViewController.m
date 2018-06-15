@@ -15,17 +15,17 @@
 #define PRINTERROR(LABEL)	printf("%s err %4.4s %d\n", LABEL, (char *)&err, err)
 
 const int port = 51515;			// socket端口号
-const unsigned int kNumAQBufs = 4;			// audio queue buffers 数量
+const unsigned int kNumAQBufs = 3;			// audio queue buffers 数量
 const size_t kAQBufSize = 128 * 1024;		// buffer 的大小 单位是字节
 const size_t kAQMaxPacketDescs = 512;		// ASPD的最大数量
 
 struct MyData
 {
+    // 1.创建AudioQueue
+    AudioQueueRef audioQueue;
+    // 2.创建一个自己的buffer数组BufferArray(一般2-3个即可)
+    AudioQueueBufferRef audioQueueBuffer[kNumAQBufs];        // audio queue buffers// the audio queue
     AudioFileStreamID audioFileStream;	// the audio file stream parser
-    
-    AudioQueueRef audioQueue;								// the audio queue
-    AudioQueueBufferRef audioQueueBuffer[kNumAQBufs];		// audio queue buffers
-    
     AudioStreamPacketDescription packetDescs[kAQMaxPacketDescs];	// packet descriptions for enqueuing audio
     
     unsigned int fillBufferIndex;	// the index of the audioQueueBuffer that is being filled
@@ -101,8 +101,9 @@ typedef struct MyData MyData;
     
     // AudioFileStream可以用来读取音频流信息和分离音频帧，与之类似的API簇还有AudioFile和ExtAudioFile。
     // 打开一个音频流转换器，需要设置AudioFileStream_PropertyListenerProc 和 AudioFileStream_PacketsProc 回调函数；
+    // 1.打开音频流， 尽量提供inFileTypeHint参数帮助AudioFileStream解析数据，后记录AudioFileStreamID
     OSStatus err = AudioFileStreamOpen(myData, MyPropertyListenerProc, MyPacketsProc,
-                                       0, &myData->audioFileStream);
+                                       kAudioFileMP3Type, &myData->audioFileStream);
     if (err) { PRINTERROR("AudioFileStreamOpen"); free(buf); return 1; }
     
     while (!myData->failed) {
@@ -111,26 +112,30 @@ typedef struct MyData MyData;
         ssize_t bytesRecvd = recv(connection_socket, buf, kRecvBufSize, 0);
         printf("bytesRecvd %ld\n", bytesRecvd);
         if (bytesRecvd <= 0) break; // eof or failure
-        
+
+        // 2.当有数据时调用AudioFileStreamParseBytes进行解析
         // AudioFileStreamParseBytes 解析数据，会调用之前设置好的AudioFileStream_PropertyListenerProc 和 AudioFileStream_PacketsProc 回调函数；
+        // 第四个参数在需要合适的时候传入kAudioFileStreamParseFlag_Discontinuity
         err = AudioFileStreamParseBytes(myData->audioFileStream, (UInt32)bytesRecvd, buf, 0);
-        if (err) { PRINTERROR("AudioFileStreamParseBytes"); return 0; }
+        // 每一次解析都需要注意返回值，返回值一旦出现noErr以外的值就代表Parse出错, 其中kAudioFileStreamError_NotOptimized代表该文件缺少头信息或者其头信息在文件尾部不适合流播放.
+        if (err) { PRINTERROR("AudioFileStreamParseBytes"); return 1; }
     }
     
     // enqueue last buffer
     MyEnqueueBuffer(myData);
     
     printf("flushing\n");
+
+    // 如果需要停止播放，可以调用这个函数，第二个参数表示同步/异步
+    err = AudioQueueStop(myData->audioQueue, true);
+    if (err) { PRINTERROR("AudioQueueStop"); free(buf); return 1; }
+
     // 播放结束
     // 传入最后的音频数据后需要调用，否则buffer里面的数据可能会影响下次播放
     err = AudioQueueFlush(myData->audioQueue);
     if (err) { PRINTERROR("AudioQueueFlush"); free(buf); return 1; }
     
     printf("stopping\n");
-    // 如果需要停止播放，可以调用这个函数，第二个参数表示同步/异步
-    err = AudioQueueStop(myData->audioQueue, false);
-    if (err) { PRINTERROR("AudioQueueStop"); free(buf); return 1; }
-    
     printf("waiting until finished playing..\n");
     printf("start->lock\n");
     pthread_mutex_lock(&myData->mutex);
@@ -154,7 +159,7 @@ typedef struct MyData MyData;
 }
 
 
-//音频属性回调函数
+// 3.解析文件同时来到回调解析文件格式信息， 如果回调得到kAudioFileStreamProperty_ReadyToProducePackets表示解析格式信息完成
 void MyPropertyListenerProc(	void *							inClientData,
                             AudioFileStreamID				inAudioFileStream,
                             AudioFileStreamPropertyID		inPropertyID,
@@ -169,6 +174,7 @@ void MyPropertyListenerProc(	void *							inClientData,
     switch (inPropertyID) {
         case kAudioFileStreamProperty_ReadyToProducePackets :
         {
+            // 解析格式信息完成，解析完毕进入MyAudioFileStreamPacketsCallBack回调来分离音频帧
             // the file stream parser is now ready to produce audio packets.
             // get the stream format.
             AudioStreamBasicDescription asbd;
@@ -176,13 +182,12 @@ void MyPropertyListenerProc(	void *							inClientData,
             // 获取特定的属性
             err = AudioFileStreamGetProperty(inAudioFileStream, kAudioFileStreamProperty_DataFormat, &asbdSize, &asbd);
             if (err) { PRINTERROR("get kAudioFileStreamProperty_DataFormat"); myData->failed = true; break; }
-            
-            // 配置AudioQueue
-            // 添加AudioQueue的回调函数和添加参数，MyAudioQueueOutputCallback是播完结束的回调
+
+            // 1.创建AudioQueue实例，回调函数和添加参数，MyAudioQueueOutputCallback是播完结束的回调
             err = AudioQueueNewOutput(&asbd, MyAudioQueueOutputCallback, myData, NULL, NULL, 0, &myData->audioQueue);
             if (err) { PRINTERROR("AudioQueueNewOutput"); myData->failed = true; break; }
             
-            // AudioBuffer分配buffer
+            // 2. 创建Buffer
             for (unsigned int i = 0; i < kNumAQBufs; ++i) {
                 err = AudioQueueAllocateBuffer(myData->audioQueue, kAQBufSize, &myData->audioQueueBuffer[i]);
                 if (err) { PRINTERROR("AudioQueueAllocateBuffer"); myData->failed = true; break; }
@@ -215,7 +220,7 @@ void MyPropertyListenerProc(	void *							inClientData,
     }
 }
 
-// 数据回调函数
+// 4.分离音频帧，将分离出来的帧信息保存到自己的buffer中
 void MyPacketsProc(void *							inClientData,
                    UInt32							inNumberBytes,
                    UInt32							inNumberPackets,
@@ -263,7 +268,7 @@ OSStatus StartQueueIfNeeded(MyData* myData)
 {
     OSStatus err = noErr;
     if (!myData->started) {		// start the queue if it has not been started already
-        // 开始AudioQueue播放
+        // 4.开始AudioQueue播放，已经缓存好的数据
         err = AudioQueueStart(myData->audioQueue, NULL);
         if (err) { PRINTERROR("AudioQueueStart"); myData->failed = true; return err; }
         myData->started = true;
@@ -281,11 +286,12 @@ OSStatus MyEnqueueBuffer(MyData* myData)
     // enqueue buffer
     AudioQueueBufferRef fillBuf = myData->audioQueueBuffer[myData->fillBufferIndex];
     if (fillBuf == nil) {
+        // 如果缓冲数据为空，则播放失败
         err = kAudioServicesUnsupportedPropertyError;
         return err;
     }
     fillBuf->mAudioDataByteSize = (UInt32)myData->bytesFilled;
-    // 向AudioQueue传入buffer
+    // 3.插入Buffer数据，向AudioQueue传入buffer数据
     err = AudioQueueEnqueueBuffer(myData->audioQueue, fillBuf, (UInt32)myData->packetsFilled, myData->packetDescs);
     if (err) { PRINTERROR("AudioQueueEnqueueBuffer"); myData->failed = true; return err; }
     
@@ -337,7 +343,7 @@ int MyFindQueueBuffer(MyData* myData, AudioQueueBufferRef inBuffer)
     return -1;
 }
 
-// AudioQueue释放buffer的回调函数
+// AudioQueue中buffer使用完毕回调函数
 void MyAudioQueueOutputCallback(	void*					inClientData,
                                 AudioQueueRef			inAQ,
                                 AudioQueueBufferRef		inBuffer)
