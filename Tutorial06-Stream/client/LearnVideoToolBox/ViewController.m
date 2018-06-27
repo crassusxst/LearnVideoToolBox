@@ -14,7 +14,10 @@
 
 #define PRINTERROR(LABEL)	printf("%s err %4.4s %d\n", LABEL, (char *)&err, err)
 
-const int port = 51515;			// socket端口号
+//const int port = 51515;            // socket端口号
+const int port = 8999;
+
+
 const unsigned int kNumAQBufs = 3;			// audio queue buffers 数量
 const size_t kAQBufSize = 128 * 1024;		// buffer 的大小 单位是字节
 const size_t kAQMaxPacketDescs = 512;		// ASPD的最大数量
@@ -391,7 +394,7 @@ int MyConnectSocket() {
     
     int connection_socket;
     // 这里的host，要改成对应的地址！！！
-    struct hostent *host = gethostbyname("192.168.2.101");
+    struct hostent *host = gethostbyname("192.168.9.15");
     if (!host) { printf("can't get host\n"); return -1; }
     
     connection_socket = socket(AF_INET, SOCK_STREAM, 0);

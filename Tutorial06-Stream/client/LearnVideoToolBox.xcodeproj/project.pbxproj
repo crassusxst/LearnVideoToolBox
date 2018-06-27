@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A41EAA3820D2510C00E0C403 /* AudioFileObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A41EAA3720D2510C00E0C403 /* AudioFileObject.m */; };
+		A458894220DB58760019298F /* YSTAudioManger.m in Sources */ = {isa = PBXBuildFile; fileRef = A458894120DB58760019298F /* YSTAudioManger.m */; };
 		A4AB8D9420D1341D00239079 /* AudioFilePlayObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A4AB8D9320D1341D00239079 /* AudioFilePlayObject.m */; };
 		FD315B841D77F89E000CC96D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FD315B831D77F89E000CC96D /* main.m */; };
 		FD315B871D77F89E000CC96D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FD315B861D77F89E000CC96D /* AppDelegate.m */; };
@@ -32,6 +33,8 @@
 /* Begin PBXFileReference section */
 		A41EAA3620D2510C00E0C403 /* AudioFileObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioFileObject.h; sourceTree = "<group>"; };
 		A41EAA3720D2510C00E0C403 /* AudioFileObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioFileObject.m; sourceTree = "<group>"; };
+		A458894020DB58760019298F /* YSTAudioManger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YSTAudioManger.h; sourceTree = "<group>"; };
+		A458894120DB58760019298F /* YSTAudioManger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YSTAudioManger.m; sourceTree = "<group>"; };
 		A4AB8D9220D1341D00239079 /* AudioFilePlayObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioFilePlayObject.h; sourceTree = "<group>"; };
 		A4AB8D9320D1341D00239079 /* AudioFilePlayObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioFilePlayObject.m; sourceTree = "<group>"; };
 		FD315B7F1D77F89E000CC96D /* LearnVideoToolBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnVideoToolBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -93,6 +96,8 @@
 			children = (
 				FD315B851D77F89E000CC96D /* AppDelegate.h */,
 				FD315B861D77F89E000CC96D /* AppDelegate.m */,
+				A458894020DB58760019298F /* YSTAudioManger.h */,
+				A458894120DB58760019298F /* YSTAudioManger.m */,
 				FD315B881D77F89E000CC96D /* ViewController.h */,
 				FD315B891D77F89E000CC96D /* ViewController.m */,
 				A4AB8D9220D1341D00239079 /* AudioFilePlayObject.h */,
@@ -231,6 +236,7 @@
 				FD315B841D77F89E000CC96D /* main.m in Sources */,
 				A41EAA3820D2510C00E0C403 /* AudioFileObject.m in Sources */,
 				A4AB8D9420D1341D00239079 /* AudioFilePlayObject.m in Sources */,
+				A458894220DB58760019298F /* YSTAudioManger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
